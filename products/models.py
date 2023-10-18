@@ -80,6 +80,29 @@ class Product(models.Model):
         verbose_name = 'продукт'
         verbose_name_plural = 'продукты'
 
+    # def resize_and_save_images(self, image):
+    #     # Open the image using Pillow
+    #     with Image.open(image.path) as img:
+    #         # Resize the image for the preview field
+    #         preview_size = (400, 400)
+    #         img.thumbnail(preview_size)
+    #         preview_path = os.path.join('product/images/product/preview', image.name)
+    #         img.save(preview_path)
+    #         # Resize the image for the thumb field
+    #         thumb_size = (100, 100)
+    #         img.thumbnail(thumb_size)
+    #         thumb_path = os.path.join('product/images/product/thumb', image.name)
+    #         img.save(thumb_path)
+    #         # Save the paths to the corresponding fields in the model
+    #         self.preview_image = preview_path
+    #         self.thumb_image = thumb_path
+
+    # def save(self, *args, **kwargs):
+    #     # Resize and save the images before saving the model instance
+    #     if self.base_image:
+    #         self.resize_and_save_images(self.base_image)
+    #     super().save(*args, **kwargs)
+
     @property
     @admin.display(description='превью')
     def preview_image(self):
