@@ -19,6 +19,6 @@ class SubCategoryAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'subcategory', 'title', 'slug', 'base_image', 'price'
+        'id', 'subcategory', 'title', 'slug', 'image', 'price'
     ]
     search_fields = ['title', 'slug']

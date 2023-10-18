@@ -1,4 +1,5 @@
 from rest_framework import generics, mixins
+
 from .models import Product
 from .serializers import ProductSerializer
 

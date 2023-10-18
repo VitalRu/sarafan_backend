@@ -3,7 +3,8 @@ import os
 from PIL import Image
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.contrib import admin
+
+from shoptree.settings import MEDIA_ROOT
 
 
 User = get_user_model()
@@ -18,7 +19,7 @@ class Category(models.Model):
     )
     image = models.ImageField(
         'изображение категории',
-        upload_to='product/images/category',
+        upload_to='images/category',
         default=None,
     )
 
@@ -43,7 +44,7 @@ class SubCategory(models.Model):
     )
     image = models.ImageField(
         'изображение подкатегории',
-        upload_to='product/images/subcategory',
+        upload_to='images/subcategory',
         default=None,
     )
 
@@ -66,13 +67,25 @@ class Product(models.Model):
         max_length=32,
         unique=True,
     )
-    base_image = models.ImageField(
-        'изображение продукта',
-        upload_to='product/images/product',
-        default=None,
-    )
     price = models.DecimalField(
         max_digits=15, decimal_places=2, default=99.99
+    )
+    image = models.ImageField(
+        'изображение продукта',
+        upload_to='images/product/',
+        default=None
+    )
+    preview_image = models.ImageField(
+        'изображение продукта (превью)',
+        upload_to='images/product/preview',
+        blank=True,
+        null=True
+    )
+    thumb_image = models.ImageField(
+        'изображение продукта (миниатюра)',
+        upload_to='images/product/thumb',
+        blank=True,
+        null=True
     )
 
     class Meta:
@@ -80,51 +93,31 @@ class Product(models.Model):
         verbose_name = 'продукт'
         verbose_name_plural = 'продукты'
 
-    # def resize_and_save_images(self, image):
-    #     # Open the image using Pillow
-    #     with Image.open(image.path) as img:
-    #         # Resize the image for the preview field
-    #         preview_size = (400, 400)
-    #         img.thumbnail(preview_size)
-    #         preview_path = os.path.join('product/images/product/preview', image.name)
-    #         img.save(preview_path)
-    #         # Resize the image for the thumb field
-    #         thumb_size = (100, 100)
-    #         img.thumbnail(thumb_size)
-    #         thumb_path = os.path.join('product/images/product/thumb', image.name)
-    #         img.save(thumb_path)
-    #         # Save the paths to the corresponding fields in the model
-    #         self.preview_image = preview_path
-    #         self.thumb_image = thumb_path
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        print('>>>', self.image.name)
+        print('>>>', self.image.path)
 
-    # def save(self, *args, **kwargs):
-    #     # Resize and save the images before saving the model instance
-    #     if self.base_image:
-    #         self.resize_and_save_images(self.base_image)
-    #     super().save(*args, **kwargs)
+        img = Image.open(self.image.path)
+        filename = os.path.basename(self.image.name)
 
-    @property
-    @admin.display(description='превью')
-    def preview_image(self):
-        with Image.open(self.base_image.path) as img:
+        base = (900, 900)
+        img.thumbnail(base)
+        img.save(self.image.path)
 
-            img.thumbnail(400, 400)
-            preview_path = os.path.join(
-                'product/images/product/preview', self.base_image.name
-            )
-            img.save(preview_path)
-        return img
+        preview = (300, 300)
+        preview_dir = f'{MEDIA_ROOT}/images/product/preview/'
+        if not os.path.exists(preview_dir):
+            os.makedirs(preview_dir)
+        img.thumbnail(preview)
+        img.save(preview_dir + filename)
 
-    @property
-    @admin.display(description='миниатюра')
-    def thumb_image(self):
-        with Image.open(self.base_image.path) as img:
-            img.thumbnail(100, 100)
-            thumb_path = os.path.join(
-                'product/images/product/thumb', self.base_image.name
-            )
-            img.save(thumb_path)
-        return img
+        thumb = (100, 100)
+        thumb_dir = f'{MEDIA_ROOT}/images/product/thumb/'
+        if not os.path.exists(thumb_dir):
+            os.makedirs(thumb_dir)
+        img.thumbnail(thumb)
+        img.save(thumb_dir + filename)
 
     def __str__(self):
         return self.title
