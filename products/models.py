@@ -70,40 +70,17 @@ class Product(models.Model):
     price = models.DecimalField(
         max_digits=15, decimal_places=2, default=99.99
     )
-    image = models.ImageField(
+    _image = models.ImageField(
         'изображение продукта',
         upload_to='images/product/',
         default=None
     )
-    preview_image = models.ImageField(
-        'изображение продукта (превью)',
-        upload_to='images/product/preview',
-        blank=True,
-        null=True
-    )
-    thumb_image = models.ImageField(
-        'изображение продукта (миниатюра)',
-        upload_to='images/product/thumb',
-        blank=True,
-        null=True
-    )
 
-    class Meta:
-        ordering = ['title']
-        verbose_name = 'продукт'
-        verbose_name_plural = 'продукты'
-
-    def save(self, *args, **kwargs):
+    def set_image(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        print('>>>', self.image.name)
-        print('>>>', self.image.path)
-
-        img = Image.open(self.image.path)
-        filename = os.path.basename(self.image.name)
-
-        base = (900, 900)
-        img.thumbnail(base)
-        img.save(self.image.path)
+        print('>>>', self._image.path)
+        img = Image.open(self._image.path)
+        filename = os.path.basename(self._image.name)
 
         preview = (300, 300)
         preview_dir = f'{MEDIA_ROOT}/images/product/preview/'
@@ -112,12 +89,51 @@ class Product(models.Model):
         img.thumbnail(preview)
         img.save(preview_dir + filename)
 
-        thumb = (100, 100)
-        thumb_dir = f'{MEDIA_ROOT}/images/product/thumb/'
-        if not os.path.exists(thumb_dir):
-            os.makedirs(thumb_dir)
-        img.thumbnail(thumb)
-        img.save(thumb_dir + filename)
+    def get_image(self):
+        return self._image
+
+    preview_image = property(get_image, set_image)
+
+    # thumb_image = models.ImageField(
+    #     'изображение продукта (миниатюра)',
+    #     upload_to='images/product/thumb',
+    #     blank=True,
+    #     null=True
+    # )
+
+    class Meta:
+        ordering = ['title']
+        verbose_name = 'продукт'
+        verbose_name_plural = 'продукты'
+
+    def save(self, *args, **kwargs):
+        img = Image.open(self._image.path)
+        filename = os.path.basename(self._image.name)
+
+        preview = (300, 300)
+        preview_dir = f'{MEDIA_ROOT}/images/product/preview/'
+        if not os.path.exists(preview_dir):
+            os.makedirs(preview_dir)
+        img.thumbnail(preview)
+        img.save(preview_dir + filename)
+        super().save(*args, **kwargs)
+
+    # def save(self, *args, **kwargs):
+    #     super().save()
+
+    #     img = Image.open(self.image.path)
+    #     filename = os.path.basename(self.image.name)
+
+    #     base = (400, 400)
+    #     img.thumbnail(base)
+    #     img.save(self.image.path)
+
+    #     preview = (300, 300)
+    #     preview_dir = f'{MEDIA_ROOT}/images/product/preview/'
+    #     if not os.path.exists(preview_dir):
+    #         os.makedirs(preview_dir)
+    #     img.thumbnail(preview)
+    #     img.save(preview_dir + filename)
 
     def __str__(self):
         return self.title

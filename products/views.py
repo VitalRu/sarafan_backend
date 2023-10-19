@@ -1,21 +1,20 @@
-from rest_framework import generics, mixins
+from rest_framework import viewsets
 
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, Category
+from .serializers import ProductSerializer, CategorySerializer
 
 
-class ProductMixinView(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    generics.GenericAPIView
-):
+class CategoryViewset(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'pk'
 
     def get(self, request, *args, **kwargs):
-        print('>>>', args, kwargs)
         pk = kwargs.get('pk')
         if pk is not None:
             return self.retrieve(request, *args, **kwargs)
